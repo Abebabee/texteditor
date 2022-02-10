@@ -41,25 +41,28 @@ namespace Lab3
         }
         private void BtnSaveAs_Click(object sender, EventArgs e)
         {
+            int checkClick=1;
             Console.WriteLine(fileName);
             
             if (NoteForm.ActiveForm.Text.Contains("*"))
             {
-                unsavedChanges();
-
+                checkClick=unsavedChanges();
             }
-            Stream myStream;
-            SaveFileDialog fileDiag = new SaveFileDialog();
-            fileDiag.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-            fileDiag.FilterIndex = 2;
-            fileDiag.RestoreDirectory = true;
-            if (fileDiag.ShowDialog() == DialogResult.OK)
+            if (checkClick!=2)
             {
-                if ((myStream = fileDiag.OpenFile()) != null)
+                Stream myStream;
+                SaveFileDialog fileDiag = new SaveFileDialog();
+                fileDiag.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                fileDiag.FilterIndex = 2;
+                fileDiag.RestoreDirectory = true;
+                if (fileDiag.ShowDialog() == DialogResult.OK)
                 {
-                    myStream.Close();
-                    File.WriteAllText(fileDiag.FileName, TextBox.Text);
-                    MessageBox.Show("Wrote to file..");
+                    if ((myStream = fileDiag.OpenFile()) != null)
+                    {
+                        myStream.Close();
+                        File.WriteAllText(fileDiag.FileName, TextBox.Text);
+                        MessageBox.Show("Wrote to file..");
+                    }
                 }
             }
         }
@@ -100,20 +103,36 @@ namespace Lab3
         }
         private void formClosing(object sender, FormClosingEventArgs e)
         {
-            Console.WriteLine("hej");
+            if (NoteForm.ActiveForm.Text.Contains("*"))
+            {
+                if (unsavedChanges() == 2) //If user clicks cancel, its cancels the event
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+        private int unsavedChanges()
+        {
+            Console.WriteLine("hej i unsaved changes!");
             string textMsg = $"Spara ändringar för {fileName}?";
             var checkResult = MessageBox.Show(textMsg, "Osparad fil", MessageBoxButtons.YesNoCancel);
             if (checkResult == DialogResult.Yes)
             {
-                //Spara i aktuell fil..
+                BtnSave.PerformClick();
+                return 1;
             }
             if (checkResult == DialogResult.Cancel)
             {
-                //Stäng ner messagebox
+                return 2;
             }
             if (checkResult == DialogResult.No)
             {
                 //Då ska man kunna spara som..????
+                return 3;
+            }
+            else
+            {
+                return 4;
             }
         }
     }
